@@ -1,0 +1,33 @@
+version: 'latest'  # It's better to use the latest version
+
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - my-net
+    restart: always
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test123
+      POSTGRES_DB: crud_app
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    networks:
+      - my-net
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    
+volumes:
+  db-data: {}
+
+networks:
+  my-net:
+    driver: bridge

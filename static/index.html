@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Application</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        input, button { margin: 5px; }
+        .item-list { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Simple CRUD Application</h1>
+
+    <!-- Form to Create a New Item -->
+    <h2>Create Item</h2>
+    <input type="text" id="name" placeholder="Name">
+    <input type="text" id="description" placeholder="Description">
+    <button onclick="createItem()">Create</button>
+
+    <!-- Section to List All Items -->
+    <h2>Items List</h2>
+    <button onclick="getItems()">Refresh List</button>
+    <div class="item-list" id="itemList"></div>
+
+    <!-- JavaScript to Interact with the Backend API -->
+    <script>
+        // Fetch all items and display them
+        function getItems() {
+            fetch('/items')
+                .then(response => response.json())
+                .then(data => {
+                    const itemList = document.getElementById('itemList');
+                    itemList.innerHTML = '';
+                    data.forEach(item => {
+                        itemList.innerHTML += `
+                            <div id="item-${item.id}">
+                                <strong>${item.name}</strong>: ${item.description} 
+                                <button onclick="editItem(${item.id})">Edit</button>
+                                <button onclick="deleteItem(${item.id})">Delete</button>
+                            </div>
+                        `;
+                    });
+                });
+        }
+
+        // Create a new item
+        function createItem() {
+            const name = document.getElementById('name').value;
+            const description = document.getElementById('description').value;
+
+            fetch('/items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                getItems();
+                document.getElementById('name').value = '';
+                document.getElementById('description').value = '';
+            });
+        }
+
+        // Edit an existing item
+        function editItem(id) {
+            const name = prompt("Enter new name:");
+            const description = prompt("Enter new description:");
+            if (!name || !description) return;
+
+            fetch(`/items/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                getItems();
+            });
+        }
+
+        // Delete an item
+        function deleteItem(id) {
+            fetch(`/items/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                getItems();
+            });
+        }
+
+        // Initial load of items
+        window.onload = getItems;
+    </script>
+</body>
+</html>
